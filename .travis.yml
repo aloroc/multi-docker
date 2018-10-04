@@ -1,0 +1,21 @@
+sudo: reuquired
+services:
+  - docker
+
+before_install:
+  - docker build -t aloroc/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run aloroc/react-test npm test -- --coverage
+  
+after_success:
+  - docker build -t aloroc/multi-client ./client
+  - docker build -t aloroc/multi-nginx ./nginx
+  - docker build -t aloroc/multi-server ./server
+  - docker build -t aloroc/multi-worker ./worker
+
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  - docker push aloroc/multi-client
+  - docker push aloroc/multi-nginx
+  - docker push aloroc/multi-server
+  - docker push aloroc/multi-worker
